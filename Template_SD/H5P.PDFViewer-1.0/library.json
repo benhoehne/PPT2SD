@@ -1,0 +1,32 @@
+{
+  "title": "PDF Viewer",
+  "description": "A simple PDF viewer for H5P",
+  "majorVersion": 1,
+  "minorVersion": 0,
+  "patchVersion": 3,
+  "runnable": 0,
+  "author": "H5P",
+  "license": "MIT",
+  "machineName": "H5P.PDFViewer",
+  "preloadedJs": [
+    {
+      "path": "dist/pdf-viewer.js"
+    },
+    {
+      "path": "dist/pdf.worker.js"
+    }
+  ],
+  "preloadedCss": [
+    {
+      "path": "dist/pdf-viewer.css"
+    }
+  ],
+  "preloadedDependencies": [
+    {
+      "machineName": "H5P.Question",
+      "majorVersion": 1,
+      "minorVersion": 4
+    }
+  ],
+  "embedTypes": ["div"]
+} 

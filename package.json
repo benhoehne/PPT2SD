@@ -1,0 +1,33 @@
+{
+  "name": "ppt2sd",
+  "version": "1.0.0",
+  "description": "Powerpoint to H5P SlideDeck",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "css-watch": "npx @tailwindcss/cli -i ./src/css/input.css -o ./static/css/output.css --watch --minify",
+    "dev": "concurrently \"flask run --debug\" \"npm run css-watch\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benhoehne/PPT2SD.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/benhoehne/PPT2SD/issues"
+  },
+  "homepage": "https://github.com/benhoehne/PPT2SD#readme",
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "concurrently": "^9.1.2",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.10",
+    "@tailwindcss/cli": "^4.1.10"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.1.10"
+  }
+}

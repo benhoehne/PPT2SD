@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}PPT 2 SlideDeck{% endblock %}
+
+{% block content %}
+<div class="mt-10 grid grid-cols-1 gap-4 sm:mt-16">
+    <div class="flex p-px">
+        <div class="overflow-hidden rounded-lg bg-gray-800 ring-1 ring-white/15 w-full">
+            <div class="p-10">
+                <form id="uploadForm" class="space-y-8">
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        <!-- PDF Upload -->
+                        <div class="flex p-px">
+                            <div class="overflow-hidden rounded-lg bg-gray-700 ring-1 ring-white/15 w-full">
+                                <div class="p-6">
+                                    <h3 class="text-sm/4 font-semibold text-gray-400">Required</h3>
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-white">PDF Slides</p>
+                                    <p class="mt-2 text-sm text-gray-400">Upload your PDF slides for conversion</p>
+                                    
+                                    <div id="pdfDropZone" class="mt-4 flex justify-center rounded-lg border border-dashed border-gray-500/25 px-6 py-10">
+                                        <div class="text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                            <div class="mt-4 flex text-sm leading-6 text-gray-400">
+                                                <label for="pdf-upload" class="relative cursor-pointer rounded-md bg-gray-800 font-semibold text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-400">
+                                                    <span>Upload a file</span>
+                                                    <input id="pdf-upload" name="pdf" type="file" class="sr-only" accept=".pdf" required>
+                                                </label>
+                                                <p class="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p class="text-xs leading-5 text-gray-400">PDF up to 16MB</p>
+                                        </div>
+                                    </div>
+                                    <p id="pdfFileName" class="mt-2 text-sm text-gray-400"></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- PPTX Upload -->
+                        <div class="flex p-px">
+                            <div class="overflow-hidden rounded-lg bg-gray-700 ring-1 ring-white/15 w-full">
+                                <div class="p-6">
+                                    <h3 class="text-sm/4 font-semibold text-gray-400">Optional</h3>
+                                    <p class="mt-2 text-lg font-medium tracking-tight text-white">PowerPoint File</p>
+                                    <p class="mt-2 text-sm text-gray-400">Upload PPTX to include audio and notes</p>
+                                    
+                                    <div id="pptxDropZone" class="mt-4 flex justify-center rounded-lg border border-dashed border-gray-500/25 px-6 py-10">
+                                        <div class="text-center">
+                                            <svg class="mx-auto h-12 w-12 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                            </svg>
+                                            <div class="mt-4 flex text-sm leading-6 text-gray-400">
+                                                <label for="pptx-upload" class="relative cursor-pointer rounded-md bg-gray-800 font-semibold text-white focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2 hover:text-indigo-400">
+                                                    <span>Upload a file</span>
+                                                    <input id="pptx-upload" name="pptx" type="file" class="sr-only" accept=".pptx">
+                                                </label>
+                                                <p class="pl-1">or drag and drop</p>
+                                            </div>
+                                            <p class="text-xs leading-5 text-gray-400">PPTX up to 16MB</p>
+                                        </div>
+                                    </div>
+                                    <p id="pptxFileName" class="mt-2 text-sm text-gray-400"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Title Input -->
+                    <div class="flex p-px">
+                        <div class="overflow-hidden rounded-lg bg-gray-700 ring-1 ring-white/15 w-full">
+                            <div class="p-6">
+                                <h3 class="text-sm/4 font-semibold text-gray-400">Optional</h3>
+                                <p class="mt-2 text-lg font-medium tracking-tight text-white">Presentation Title</p>
+                                <p class="mt-2 text-sm text-gray-400">Leave blank to use the filename as the title</p>
+                                
+                                <div class="mt-4">
+                                    <input type="text" name="title" id="title" class="block w-full rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="Enter presentation title">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Convert Button -->
+                    <div class="flex p-px">
+                        <div class="overflow-hidden rounded-lg bg-gray-700 ring-1 ring-white/15 w-full">
+                            <div class="p-6">
+                                <button type="submit" class="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                                    Convert to H5P SlideDeck
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('uploadForm');
+    const pdfDropZone = document.getElementById('pdfDropZone');
+    const pptxDropZone = document.getElementById('pptxDropZone');
+    const pdfInput = document.getElementById('pdf-upload');
+    const pptxInput = document.getElementById('pptx-upload');
+    const pdfFileName = document.getElementById('pdfFileName');
+    const pptxFileName = document.getElementById('pptxFileName');
+
+    // Handle file input changes
+    pdfInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            pdfFileName.textContent = this.files[0].name;
+        }
+    });
+
+    pptxInput.addEventListener('change', function(e) {
+        if (this.files.length > 0) {
+            pptxFileName.textContent = this.files[0].name;
+        }
+    });
+
+    // Handle drag and drop
+    function handleDrop(e, dropZone, input, fileNameElement) {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-500/10');
+        dropZone.classList.add('border-gray-500/25');
+
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type === 'application/pdf' || file.type === 'application/vnd.openxmlformats-officedocument.presentationml.presentation') {
+                input.files = files;
+                fileNameElement.textContent = file.name;
+            }
+        }
+    }
+
+    function handleDragOver(e, dropZone) {
+        e.preventDefault();
+        dropZone.classList.remove('border-gray-500/25');
+        dropZone.classList.add('border-indigo-500', 'bg-indigo-500/10');
+    }
+
+    function handleDragLeave(e, dropZone) {
+        e.preventDefault();
+        dropZone.classList.remove('border-indigo-500', 'bg-indigo-500/10');
+        dropZone.classList.add('border-gray-500/25');
+    }
+
+    // Add drag and drop event listeners
+    [pdfDropZone, pptxDropZone].forEach(dropZone => {
+        dropZone.addEventListener('dragover', (e) => handleDragOver(e, dropZone));
+        dropZone.addEventListener('dragleave', (e) => handleDragLeave(e, dropZone));
+        dropZone.addEventListener('drop', (e) => {
+            const input = dropZone === pdfDropZone ? pdfInput : pptxInput;
+            const fileNameElement = dropZone === pdfDropZone ? pdfFileName : pptxFileName;
+            handleDrop(e, dropZone, input, fileNameElement);
+        });
+    });
+
+    // Handle form submission
+    form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        const pdfFile = pdfInput.files[0];
+        const pptxFile = pptxInput.files[0];
+        const title = document.getElementById('title').value;
+
+        if (!pdfFile) {
+            alert('Please upload a PDF file');
+            return;
+        }
+
+        formData.append('pdf', pdfFile);
+        if (pptxFile) {
+            formData.append('pptx', pptxFile);
+        }
+        if (title) {
+            formData.append('title', title);
+        }
+
+        try {
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Upload failed');
+            }
+
+            // The server will handle the redirect to the download page
+            window.location.href = response.url;
+        } catch (error) {
+            alert(error.message);
+        }
+    });
+});
+</script>
+{% endblock %} 

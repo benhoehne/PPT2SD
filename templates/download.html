@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Download - PPT 2 SlideDeck{% endblock %}
+
+{% block content %}
+<div class="mt-10 grid grid-cols-1 gap-4 sm:mt-16">
+    <div class="flex p-px">
+        <div class="overflow-hidden rounded-lg bg-gray-800 ring-1 ring-white/15 w-full">
+            <div class="p-10">
+                <h3 class="text-sm/4 font-semibold text-gray-400">Conversion Complete</h3>
+                <p class="mt-2 text-lg font-medium tracking-tight text-white">Your H5P SlideDeck is Ready</p>
+                
+                <div class="mt-6 space-y-4">
+                    <div class="rounded-md bg-gray-700 p-4">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-white">Successfully Converted</h3>
+                                <div class="mt-2 text-sm text-gray-400">
+                                    <p>Project: {{ project_name }}</p>
+                                    <p>Title: {{ project_title }}</p>
+                                    <p>File: {{ filename }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex items-center justify-between">
+                        <a href="{{ url_for('download_file', filename=filename) }}" class="inline-flex items-center rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500">
+                            <svg class="-ml-0.5 mr-1.5 h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" />
+                            </svg>
+                            Download H5P Package
+                        </a>
+                        <a href="{{ url_for('index') }}" class="text-sm font-semibold text-white hover:text-indigo-400">
+                            Convert Another File
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,11 @@
+Flask
+Werkzeug
+python-pptx
+PyPDF2
+python-docx
+Pillow
+tqdm
+click
+uuid
+gunicorn
+python-dotenv

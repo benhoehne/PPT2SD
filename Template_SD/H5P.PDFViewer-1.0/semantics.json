@@ -1,0 +1,31 @@
+[
+  {
+    "name": "pdfFile",
+    "type": "file",
+    "label": "PDF File",
+    "description": "Upload a PDF file",
+    "importance": "high",
+    "fileType": "pdf"
+  },
+  {
+    "name": "displayOptions",
+    "type": "group",
+    "label": "Display Options",
+    "fields": [
+      {
+        "name": "width",
+        "type": "text",
+        "label": "Width",
+        "description": "Width of the PDF viewer (e.g. '100%' or '800px')",
+        "default": "100%"
+      },
+      {
+        "name": "height",
+        "type": "text",
+        "label": "Height",
+        "description": "Height of the PDF viewer (e.g. '600px')",
+        "default": "600px"
+      }
+    ]
+  }
+] 

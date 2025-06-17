@@ -1,0 +1,74 @@
+{
+  "title": "Slide Deck",
+  "description": "An interactive slide deck which displays slides and audio or video to pair with the slides",
+  "contentType": "Media",
+  "majorVersion": 1,
+  "minorVersion": 0,
+  "patchVersion": 4,
+  "runnable": 1,
+  "fullscreen": 1,
+  "coreApi": {
+    "majorVersion": 1,
+    "minorVersion": 27
+  },
+  "author": "evoltas GmbH",
+  "license": "MIT",
+  "machineName": "H5P.SlideDeck",
+  "embedTypes": [
+    "iframe"
+  ],
+  "preloadedJs": [
+    {
+      "path": "dist/SlideDeck.js"
+    }
+  ],
+  "preloadedCss": [
+    {
+      "path": "dist/SlideDeck.css"
+    }
+  ],
+  "preloadedDependencies": [
+    {
+      "machineName": "FontAwesome",
+      "majorVersion": 4,
+      "minorVersion": 5
+    },
+    {
+      "machineName": "H5P.JoubelUI",
+      "majorVersion": 1,
+      "minorVersion": 3
+    },
+    {
+      "machineName": "H5P.Image",
+      "majorVersion": 1,
+      "minorVersion": 1
+    },
+    {
+      "machineName": "H5P.Audio",
+      "majorVersion": 1,
+      "minorVersion": 5
+    },
+    {
+      "machineName": "H5P.Video",
+      "majorVersion": 1,
+      "minorVersion": 6
+    },
+    {
+      "machineName": "H5P.PDFViewer",
+      "majorVersion": 1,
+      "minorVersion": 0
+    }
+  ],
+  "editorDependencies": [
+    {
+      "machineName": "H5PEditor.Wizard",
+      "majorVersion": 1,
+      "minorVersion": 2
+    },
+    {
+      "machineName": "H5PEditor.SlideDeck",
+      "majorVersion": 1,
+      "minorVersion": 0
+    }
+  ]
+}
