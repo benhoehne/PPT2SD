@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "css-watch": "npx @tailwindcss/cli -i ./src/css/input.css -o ./static/css/output.css --watch --minify",
-    "dev": "concurrently \"flask run --debug\" \"npm run css-watch\""
+    "dev": "concurrently --names \"APP,CSS\" --prefix-colors \"cyan,green\" \"clear && flask run --debug\" \"npm run css-watch\""
   },
   "repository": {
     "type": "git",
