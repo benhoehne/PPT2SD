@@ -97,6 +97,43 @@
     </div>
 
 </form>
+
+<!-- Global notification live region -->
+<div aria-live="assertive" class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6 z-50">
+    <div class="flex w-full flex-col items-center space-y-4 sm:items-end">
+        <!-- Notification panel -->
+        <div id="conversionNotification" class="pointer-events-auto w-full max-w-sm overflow-hidden rounded-lg bg-gray-800 shadow-lg ring-1 ring-black/5 transform translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2 transition-all duration-300 ease-out">
+            <div class="p-4">
+                <div class="flex items-start">
+                    <div class="shrink-0">
+                        <!-- Loading spinner -->
+                        <svg id="loadingSpinner" class="animate-spin size-6 text-blue-400" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <!-- Success icon (hidden by default) -->
+                        <svg id="successIcon" class="size-6 text-green-400 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                        </svg>
+                    </div>
+                    <div class="ml-3 w-0 flex-1 pt-0.5">
+                        <p id="notificationTitle" class="text-sm font-medium text-gray-100">Converting your presentation...</p>
+                        <p id="notificationMessage" class="mt-1 text-sm text-gray-400">Please wait while we process your files.</p>
+                    </div>
+                    <div class="ml-4 flex shrink-0">
+                        <button type="button" onclick="hideNotification()" class="inline-flex rounded-md bg-gray-800 text-gray-400 hover:text-gray-300 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-hidden">
+                            <span class="sr-only">Close</span>
+                            <svg class="size-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -162,43 +199,81 @@
             });
         });
 
-        // Handle form submission
-        form.addEventListener('submit', async function (e) {
-            e.preventDefault();
+        // Notification functions
+        function showNotification(title, message, isSuccess = false) {
+            const notification = document.getElementById('conversionNotification');
+            const notificationTitle = document.getElementById('notificationTitle');
+            const notificationMessage = document.getElementById('notificationMessage');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const successIcon = document.getElementById('successIcon');
+            
+            notificationTitle.textContent = title;
+            notificationMessage.textContent = message;
+            
+            if (isSuccess) {
+                loadingSpinner.classList.add('hidden');
+                successIcon.classList.remove('hidden');
+            } else {
+                loadingSpinner.classList.remove('hidden');
+                successIcon.classList.add('hidden');
+            }
+            
+            // Show notification with animation
+            notification.classList.remove('translate-y-2', 'opacity-0', 'sm:translate-x-2');
+            notification.classList.add('translate-y-0', 'opacity-100', 'sm:translate-x-0');
+        }
+        
+        function hideNotification() {
+            const notification = document.getElementById('conversionNotification');
+            
+            // Hide notification with animation
+            notification.classList.add('translate-y-2', 'opacity-0', 'sm:translate-x-2');
+            notification.classList.remove('translate-y-0', 'opacity-100', 'sm:translate-x-0');
+        }
 
-            const formData = new FormData();
+        // Form submission
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
             const pdfFile = pdfInput.files[0];
             const pptxFile = pptxInput.files[0];
             const title = document.getElementById('title').value;
-
+            
             if (!pdfFile) {
-                alert('Please upload a PDF file');
+                alert('Please select a PDF file');
                 return;
             }
-
+            
+            // Show conversion notification
+            showNotification('Converting your presentation...', 'Please wait while we process your files.');
+            
+            const formData = new FormData();
             formData.append('pdf', pdfFile);
             if (pptxFile) {
                 formData.append('pptx', pptxFile);
             }
-            if (title) {
-                formData.append('title', title);
-            }
-
+            formData.append('title', title);
+            
             try {
                 const response = await fetch('/upload', {
                     method: 'POST',
                     body: formData
                 });
-
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.error || 'Upload failed');
+                
+                if (response.redirected) {
+                    // Show success notification briefly before redirect
+                    showNotification('Conversion successful!', 'Redirecting to download page...', true);
+                    setTimeout(() => {
+                        window.location.href = response.url;
+                    }, 1500);
+                } else {
+                    const data = await response.json();
+                    hideNotification();
+                    alert(data.error || 'An error occurred');
                 }
-
-                // The server will handle the redirect to the download page
-                window.location.href = response.url;
             } catch (error) {
-                alert(error.message);
+                hideNotification();
+                alert('An error occurred during upload');
             }
         });
     });

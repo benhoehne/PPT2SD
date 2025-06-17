@@ -5,6 +5,12 @@ from SD_Generator import H5PSlideDeckGenerator
 import tempfile
 import uuid
 import shutil
+from pathlib import Path
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -26,21 +32,23 @@ def get_project_name(filename):
     return os.path.splitext(filename)[0]
 
 def cleanup_project_files(project_name):
-    """Clean up all files related to a project"""
+    """Clean up all project-related files after download"""
     try:
-        # Clean up uploads folder
-        upload_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{project_name}.h5p")
-        if os.path.exists(upload_path):
-            os.remove(upload_path)
+        # Remove H5P package from uploads folder
+        h5p_file = os.path.join(app.config['UPLOAD_FOLDER'], f"{project_name}.h5p")
+        if os.path.exists(h5p_file):
+            os.remove(h5p_file)
+            logger.info(f"Removed H5P package: {h5p_file}")
         
-        # Clean up output directory
-        output_dir = os.path.join('00_Output', project_name)
-        if os.path.exists(output_dir):
-            shutil.rmtree(output_dir)
+        # Remove project directory from 00_Output
+        project_dir = os.path.join('00_Output', project_name)
+        if os.path.exists(project_dir):
+            shutil.rmtree(project_dir)
+            logger.info(f"Removed project directory: {project_dir}")
             
-        app.logger.info(f"Cleaned up files for project: {project_name}")
+        logger.info(f"Cleaned up files for project: {project_name}")
     except Exception as e:
-        app.logger.error(f"Error cleaning up files for project {project_name}: {str(e)}")
+        logger.error(f"Error cleaning up files: {e}")
 
 @app.route('/')
 def index():
@@ -84,7 +92,7 @@ def upload_file():
             # Initialize generator
             generator = H5PSlideDeckGenerator(project_name=project_name)
             generator.project_title = project_title
-            generator.source_pdf = pdf_path
+            generator.source_pdf = Path(pdf_path)
             
             # Process files
             success = generator.split_pdf_into_slides()
@@ -104,10 +112,15 @@ def upload_file():
                 return jsonify({'error': 'Failed to generate H5P package'}), 500
 
             # Move the generated file to uploads folder
-            output_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
-            if os.path.exists(output_path):
-                os.remove(output_path)  # Remove existing file if any
-            os.rename(str(generator.output_path), output_path)  # Convert Path to string for os.rename
+            source_path = generator.output_path
+            target_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
+            
+            # Remove target file if it exists
+            if os.path.exists(target_path):
+                os.remove(target_path)
+            
+            # Use shutil.move instead of os.rename for cross-device compatibility
+            shutil.move(str(source_path), target_path)
 
             # Redirect to download page
             return redirect(url_for('download', 
@@ -116,13 +129,13 @@ def upload_file():
                                   project_title=project_title))
 
     except Exception as e:
-        app.logger.error(f"Error processing files: {str(e)}")
+        logger.error(f"Error processing files: {str(e)}")
         return jsonify({'error': 'An error occurred during processing'}), 500
 
 @app.route('/download/<filename>')
 def download(filename):
     project_name = request.args.get('project_name', '')
-    project_title = request.args.get('project_title', '')
+    project_title = request.args.get('project_title', project_name)
     return render_template('download.html', 
                          filename=filename,
                          project_name=project_name,
@@ -130,22 +143,22 @@ def download(filename):
 
 @app.route('/download_file/<filename>')
 def download_file(filename):
-    project_name = get_project_name(filename)
-    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-    
-    if not os.path.exists(file_path):
-        return jsonify({'error': 'File not found'}), 404
-    
-    @after_this_request
-    def cleanup(response):
-        """Clean up files after sending the response"""
-        try:
+    try:
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        if not os.path.exists(file_path):
+            return "File not found", 404
+            
+        @after_this_request
+        def cleanup(response):
+            # Extract project name from filename
+            project_name = get_project_name(filename)
             cleanup_project_files(project_name)
-        except Exception as e:
-            app.logger.error(f"Error in cleanup: {str(e)}")
-        return response
-    
-    return send_file(file_path, as_attachment=True)
+            return response
+            
+        return send_file(file_path, as_attachment=True)
+    except Exception as e:
+        logger.error(f"Error serving file: {e}")
+        return str(e), 500
 
 if __name__ == '__main__':
     app.run(debug=True) 

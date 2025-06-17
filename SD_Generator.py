@@ -35,25 +35,30 @@ class H5PSlideDeckGenerator:
         self.project_name = project_name or PROJECT_NAME
         self.verbose = verbose
         
-        # Update paths based on project name
-        self.base_dir = Path(__file__).parent
-        self.output_dir = self.base_dir / '00_Output' / self.project_name
+        # Get project root directory (where this script is located)
+        # SD_Generator.py is in the project root, so we use its directory
+        self.project_root = Path(os.path.dirname(os.path.abspath(__file__)))
+        
+        # Update paths based on project root
+        self.output_dir = self.project_root / '00_Output' / self.project_name
         self.pdf_dir = self.output_dir / 'pdf_slides'  # New directory for individual PDF slides
         self.vo_dir = self.output_dir / 'VO'
         self.notes_docx = self.output_dir / f"{self.project_name}_NOTES.docx"
-        self.template_dir = self.base_dir / 'Template_SD'
-        self.temp_dir = self.base_dir / 'temp_h5p_sd_build'
-        self.source_pdf = Path(PDF_DOC)
+        self.template_dir = self.project_root / 'Template_SD'
+        self.temp_dir = self.project_root / 'temp_h5p_sd_build'
+        self.source_pdf = None  # Will be set when processing files
+        self.slide_notes = {}  # Initialize slide notes dictionary
         
         if self.verbose:
             click.echo(f"Project: {self.project_name}")
+            click.echo(f"Project Root: {self.project_root}")
             click.echo(f"PDF Directory: {self.pdf_dir}")
             click.echo(f"Audio Directory: {self.vo_dir}")
             click.echo(f"Template: SlideDeck")
     
     def validate_directories(self) -> bool:
         """Validate that all required directories exist"""
-        if not self.source_pdf.exists():
+        if not self.source_pdf or not self.source_pdf.exists():
             click.echo(click.style(f"Error: Source PDF not found: {self.source_pdf}", fg='red'))
             return False
         
@@ -118,7 +123,7 @@ class H5PSlideDeckGenerator:
         """Split the source PDF into individual slide PDFs"""
         try:
             # Create PDF slides directory
-            self.pdf_dir.mkdir(exist_ok=True)
+            self.pdf_dir.mkdir(parents=True, exist_ok=True)
             
             # Read the source PDF
             pdf = PdfReader(self.source_pdf)
@@ -263,25 +268,42 @@ class H5PSlideDeckGenerator:
     def build_h5p_package(self, output_filename: str, slide_notes: Dict[int, str]) -> bool:
         """Build the H5P package with all slides and content"""
         try:
+            # Debug: Print template directory path
+            click.echo(f"Template directory: {self.template_dir}")
+            click.echo(f"Template directory exists: {self.template_dir.exists()}")
+            
+            # Check if template directory exists
+            if not self.template_dir.exists():
+                click.echo(click.style(f"Error: Template directory not found: {self.template_dir}", fg='red'))
+                return False
+            
             # Create temporary directory for building
-            self.temp_dir.mkdir(exist_ok=True)
+            self.temp_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Copy entire template directory structure
+            click.echo("Copying SlideDeck template files...")
+            
+            # Copy all template files and directories
+            for item in self.template_dir.iterdir():
+                if item.is_file():
+                    # Copy files in root (like h5p.json)
+                    shutil.copy2(str(item), str(self.temp_dir / item.name))
+                elif item.is_dir() and item.name != 'content':
+                    # Copy library directories (H5P.*, H5PEditor.*, FontAwesome-4.5)
+                    dest_dir = self.temp_dir / item.name
+                    if dest_dir.exists():
+                        shutil.rmtree(str(dest_dir))
+                    shutil.copytree(str(item), str(dest_dir))
             
             # Create content directory structure
             content_dir = self.temp_dir / 'content'
             content_dir.mkdir(exist_ok=True)
+            
+            # Create subdirectories for files and audios
             files_dir = content_dir / 'files'
             files_dir.mkdir(exist_ok=True)
             audios_dir = content_dir / 'audios'
             audios_dir.mkdir(exist_ok=True)
-            
-            # Copy template files
-            click.echo("Copying SlideDeck template files...")
-            for item in self.template_dir.glob('**/*'):
-                if item.is_file():
-                    rel_path = item.relative_to(self.template_dir)
-                    dest_path = self.temp_dir / rel_path
-                    dest_path.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(item, dest_path)
             
             # Get all slides
             slides = self.get_slide_files()
@@ -291,33 +313,8 @@ class H5PSlideDeckGenerator:
             
             click.echo(f"Found {len(slides)} slides")
             
-            # Create content.json
-            content = {
-                "title": self.project_name,
-                "slides": [],
-                "progressBar": True,
-                "showSlideTitles": True,
-                "showSlideNumbers": True,
-                "showSlideNotes": True,
-                "showSlideNotesToggle": True,
-                "showSlideNotesIcon": True,
-                "showSlideNotesText": True,
-                "showSlideNotesBackground": True,
-                "showSlideNotesBorder": True,
-                "showSlideNotesShadow": True,
-                "showSlideNotesOpacity": True,
-                "showSlideNotesZIndex": True,
-                "showSlideNotesPosition": True,
-                "showSlideNotesWidth": True,
-                "showSlideNotesHeight": True,
-                "showSlideNotesOverflow": True,
-                "showSlideNotesScroll": True,
-                "showSlideNotesResize": True,
-                "showSlideNotesMinimize": True,
-                "showSlideNotesMaximize": True,
-                "showSlideNotesClose": True,
-                "showSlideNotesOpen": True
-            }
+            # Create slides data
+            slides_data = []
             
             # Process each slide
             for slide_num, pdf_path, audio_path in tqdm(slides, desc="Processing slides"):
@@ -343,19 +340,39 @@ class H5PSlideDeckGenerator:
                     notes_text=notes_text
                 )
                 
-                content["slides"].append(slide)
+                slides_data.append(slide)
+            
+            # Generate content.json
+            content_data = self.generate_content_json(slides_data)
             
             # Save content.json
             content_path = content_dir / 'content.json'
             with open(content_path, 'w', encoding='utf-8') as f:
-                json.dump(content, f, indent=2)
+                json.dump(content_data, f, indent=2)
+            
+            # Update h5p.json with project title
+            h5p_json_path = self.temp_dir / 'h5p.json'
+            if h5p_json_path.exists():
+                with open(h5p_json_path, 'r', encoding='utf-8') as f:
+                    h5p_data = json.load(f)
+                
+                # Update title if project_title is set
+                if hasattr(self, 'project_title') and self.project_title:
+                    h5p_data['title'] = self.project_title
+                    h5p_data['extraTitle'] = self.project_title
+                else:
+                    h5p_data['title'] = self.project_name
+                    h5p_data['extraTitle'] = self.project_name
+                
+                with open(h5p_json_path, 'w', encoding='utf-8') as f:
+                    json.dump(h5p_data, f, separators=(',', ':'))
             
             # Create H5P package
             click.echo(f"Creating H5P SlideDeck package: {output_filename}")
-            self.output_path = self.base_dir / output_filename
+            self.output_path = self.project_root / output_filename
             
             with zip.ZipFile(self.output_path, 'w', zip.ZIP_DEFLATED) as zipf:
-                for root, _, files in os.walk(self.temp_dir):
+                for root, dirs, files in os.walk(self.temp_dir):
                     for file in files:
                         file_path = os.path.join(root, file)
                         arcname = os.path.relpath(file_path, self.temp_dir)
@@ -382,7 +399,7 @@ class H5PSlideDeckGenerator:
         slide_notes = {}
         try:
             # Create VO directory if it doesn't exist
-            self.vo_dir.mkdir(exist_ok=True)
+            self.vo_dir.mkdir(parents=True, exist_ok=True)
             
             # Open the PPTX file
             prs = Presentation(pptx_path)
@@ -432,8 +449,11 @@ class H5PSlideDeckGenerator:
             
             if slide_notes:
                 click.echo(f"Extracted notes from {len(slide_notes)} slides")
-            if media_files:
-                click.echo(click.style("✓ Audio extraction completed successfully", fg='green'))
+            
+            # Store slide notes in the instance
+            self.slide_notes = slide_notes
+            
+            click.echo(click.style("✓ Audio extraction completed successfully", fg='green'))
             
             return True, slide_notes
             
