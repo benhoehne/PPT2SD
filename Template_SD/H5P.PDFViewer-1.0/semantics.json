@@ -24,7 +24,7 @@
         "type": "text",
         "label": "Height",
         "description": "Height of the PDF viewer (e.g. '600px')",
-        "default": "600px"
+        "default": "auto"
       }
     ]
   }

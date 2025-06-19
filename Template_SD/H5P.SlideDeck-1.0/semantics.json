@@ -2,13 +2,22 @@
   {
     "name": "slides",
     "type": "list",
-    "label": "Slides",
+    "label": "List of Slides",
     "entity": "Slide",
+    "importance": "high",
     "min": 1,
+    "widgets": [
+      {
+        "name": "VerticalTabs",
+        "label": "Default"
+      }
+    ],
     "field": {
       "name": "slide",
       "type": "group",
       "label": "Slide",
+      "importance": "low",
+      "expanded": true,
       "fields": [
         {
           "name": "title",
@@ -48,12 +57,26 @@
           "optional": true,
           "enterMode": "p",
           "tags": [
-            "p",
-            "br",
+            "sub",
+            "sup",
             "strong",
             "em",
+            "p",
+            "code",
             "u",
-            "a"
+            "del",
+            "a",
+            "ul",
+            "ol",
+            "h1",
+            "h2",
+            "h3",
+            "h4",
+            "h5",
+            "h6",
+            "pre",
+            "hr",
+            "table"
           ]
         }
       ]

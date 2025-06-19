@@ -184,3 +184,9 @@ node_modules/
 .DS_Store
 uploads/
 00_Output/
+test_files/
+credentials.json
+token.pickle
+google_key.json
+
+!Template_SD/*/dist/

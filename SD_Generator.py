@@ -22,6 +22,16 @@ from PyPDF2 import PdfReader, PdfWriter
 from pptx import Presentation
 import tempfile
 import zipfile as zip
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseUpload
+from dotenv import load_dotenv
+import io
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Import project configuration
 from config import PROJECT_NAME, OUTPUT_DIR, VO_DIR, PNG_DIR, NOTES_DOCX, PROJECT_TITLE, PDF_DOC
@@ -460,6 +470,142 @@ class H5PSlideDeckGenerator:
         except Exception as e:
             click.echo(click.style(f"Error extracting from PPTX: {e}", fg='red'))
             return False, {}
+
+
+class GoogleSlidesConverter:
+    """Convert PPTX to PDF using Google Slides API"""
+    
+    SCOPES = [
+        'https://www.googleapis.com/auth/presentations',
+        'https://www.googleapis.com/auth/drive.file'
+    ]
+    
+    def __init__(self):
+        load_dotenv()  # Load environment variables from .env file
+        self.credentials = self._get_service_account_credentials()
+        if self.credentials:
+            self.slides_service = build('slides', 'v1', credentials=self.credentials)
+            self.drive_service = build('drive', 'v3', credentials=self.credentials)
+        
+    def _get_service_account_credentials(self):
+        """Get credentials from service account key file"""
+        try:
+            key_path = os.getenv('GOOGLE_SERVICE_ACCOUNT_KEY')
+            if not key_path:
+                raise ValueError("GOOGLE_SERVICE_ACCOUNT_KEY environment variable not set")
+                
+            return service_account.Credentials.from_service_account_file(
+                key_path,
+                scopes=self.SCOPES
+            )
+            
+        except Exception as e:
+            logger.error(f"Error getting service account credentials: {str(e)}")
+            return None
+
+    def _export_presentation(self, file_id, output_path):
+        """Export the presentation as PDF"""
+        try:
+            request = self.drive_service.files().export_media(
+                fileId=file_id,
+                mimeType='application/pdf'
+            )
+            
+            pdf_content = request.execute()
+            
+            with open(output_path, 'wb') as f:
+                f.write(pdf_content)
+            
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error exporting PDF: {str(e)}")
+            return False
+
+    def convert_to_pdf(self, pptx_path, output_path):
+        """Convert PPTX to PDF using Google Slides"""
+        if not self.credentials:
+            return False
+            
+        try:
+            presentation_metadata = {
+                'name': Path(pptx_path).stem + ' (Converted)',
+                'mimeType': 'application/vnd.google-apps.presentation'
+            }
+            
+            media = MediaIoBaseUpload(
+                io.FileIO(str(pptx_path), 'rb'),
+                mimetype='application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                resumable=True
+            )
+            
+            file = self.drive_service.files().create(
+                body=presentation_metadata,
+                media_body=media,
+                fields='id'
+            ).execute()
+            
+            presentation_id = file.get('id')
+            
+            if presentation_id:
+                success = self._export_presentation(presentation_id, output_path)
+                
+                # Clean up the Google Slides presentation
+                self.drive_service.files().delete(fileId=presentation_id).execute()
+                
+                return success
+            
+            return False
+                
+        except Exception as e:
+            logger.error(f"Error converting PPTX to PDF: {str(e)}")
+            return False
+
+
+class CombinedSlideDeckGenerator:
+    """Combined workflow to convert PPTX to H5P SlideDeck via Google Slides"""
+    
+    def __init__(self, project_name):
+        self.project_name = project_name
+        self.google_converter = GoogleSlidesConverter()
+        self.h5p_generator = H5PSlideDeckGenerator(project_name=project_name)
+        
+    def convert_pptx_to_h5p(self, pptx_path, project_title=None):
+        """Convert PPTX to H5P SlideDeck"""
+        try:
+            # Set up paths
+            temp_pdf_path = Path(tempfile.gettempdir()) / f"{self.project_name}_temp.pdf"
+            
+            # Convert PPTX to PDF using Google Slides
+            if not self.google_converter.convert_to_pdf(pptx_path, temp_pdf_path):
+                return False, "Failed to convert PPTX to PDF"
+                
+            # Set up H5P generator
+            self.h5p_generator.project_title = project_title or self.project_name
+            self.h5p_generator.source_pdf = temp_pdf_path
+            
+            # Process PDF into slides
+            if not self.h5p_generator.split_pdf_into_slides():
+                return False, "Failed to process PDF into slides"
+                
+            # Extract audio and notes from PPTX
+            success, slide_notes = self.h5p_generator.extract_audio_from_pptx(pptx_path)
+            if not success:
+                return False, "Failed to extract audio and notes from PPTX"
+                
+            # Generate H5P package
+            output_filename = f"{self.project_name}.h5p"
+            if not self.h5p_generator.build_h5p_package(output_filename, slide_notes):
+                return False, "Failed to generate H5P package"
+                
+            # Clean up temporary PDF
+            temp_pdf_path.unlink()
+            
+            return True, self.h5p_generator.output_path
+            
+        except Exception as e:
+            logger.error(f"Error in combined conversion: {str(e)}")
+            return False, str(e)
 
 
 @click.command()

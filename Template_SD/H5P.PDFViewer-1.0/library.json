@@ -3,7 +3,7 @@
   "description": "A simple PDF viewer for H5P",
   "majorVersion": 1,
   "minorVersion": 0,
-  "patchVersion": 3,
+  "patchVersion": 4,
   "runnable": 0,
   "author": "H5P",
   "license": "MIT",

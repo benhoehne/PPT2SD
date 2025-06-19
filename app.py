@@ -1,7 +1,7 @@
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, after_this_request
 import os
 from werkzeug.utils import secure_filename
-from SD_Generator import H5PSlideDeckGenerator
+from SD_Generator import CombinedSlideDeckGenerator
 import tempfile
 import uuid
 import shutil
@@ -22,7 +22,7 @@ if not os.path.exists(UPLOAD_FOLDER):
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 100 * 1024 * 1024  # 100MB max file size
 
-ALLOWED_EXTENSIONS = {'pptx', 'pdf'}
+ALLOWED_EXTENSIONS = {'pptx'}  # Now we only accept PPTX files
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -56,63 +56,40 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    if 'pdf' not in request.files:
-        return jsonify({'error': 'No PDF file provided'}), 400
+    if 'pptx' not in request.files:
+        return jsonify({'error': 'No PPTX file provided'}), 400
     
-    pdf_file = request.files['pdf']
-    pptx_file = request.files.get('pptx')
+    pptx_file = request.files['pptx']
     project_title = request.form.get('title', '')
 
-    if pdf_file.filename == '':
-        return jsonify({'error': 'No selected PDF file'}), 400
+    if pptx_file.filename == '':
+        return jsonify({'error': 'No selected PPTX file'}), 400
     
-    if not allowed_file(pdf_file.filename):
-        return jsonify({'error': 'Invalid PDF file type'}), 400
-    
-    if pptx_file and pptx_file.filename != '' and not allowed_file(pptx_file.filename):
+    if not allowed_file(pptx_file.filename):
         return jsonify({'error': 'Invalid PPTX file type'}), 400
 
     try:
         # Create a temporary directory for processing
         with tempfile.TemporaryDirectory() as temp_dir:
-            # Save uploaded files
-            pdf_path = os.path.join(temp_dir, secure_filename(pdf_file.filename))
-            pdf_file.save(pdf_path)
-            
-            pptx_path = None
-            if pptx_file and pptx_file.filename != '':
-                pptx_path = os.path.join(temp_dir, secure_filename(pptx_file.filename))
-                pptx_file.save(pptx_path)
+            # Save uploaded file
+            pptx_path = os.path.join(temp_dir, secure_filename(pptx_file.filename))
+            pptx_file.save(pptx_path)
 
-            # Get project name from PDF filename
-            project_name = get_project_name(pdf_file.filename)
+            # Get project name from PPTX filename
+            project_name = get_project_name(pptx_file.filename)
             if not project_title:
                 project_title = project_name
 
-            # Initialize generator
-            generator = H5PSlideDeckGenerator(project_name=project_name)
-            generator.project_title = project_title
-            generator.source_pdf = Path(pdf_path)
+            # Initialize combined generator
+            generator = CombinedSlideDeckGenerator(project_name=project_name)
             
             # Process files
-            success = generator.split_pdf_into_slides()
+            success, result = generator.convert_pptx_to_h5p(pptx_path, project_title)
             if not success:
-                return jsonify({'error': 'Failed to process PDF'}), 500
-
-            # Extract audio and notes from PPTX if provided
-            slide_notes = {}
-            if pptx_path:
-                success, slide_notes = generator.extract_audio_from_pptx(pptx_path)
-                if not success:
-                    return jsonify({'error': 'Failed to extract audio and notes from PPTX'}), 500
-
-            # Generate the H5P package
-            output_filename = f"{project_name}.h5p"
-            if not generator.build_h5p_package(output_filename, slide_notes):
-                return jsonify({'error': 'Failed to generate H5P package'}), 500
+                return jsonify({'error': result}), 500
 
             # Move the generated file to uploads folder
-            source_path = generator.output_path
+            output_filename = f"{project_name}.h5p"
             target_path = os.path.join(app.config['UPLOAD_FOLDER'], output_filename)
             
             # Remove target file if it exists
@@ -120,7 +97,7 @@ def upload_file():
                 os.remove(target_path)
             
             # Use shutil.move instead of os.rename for cross-device compatibility
-            shutil.move(str(source_path), target_path)
+            shutil.move(str(result), target_path)
 
             # Redirect to download page
             return redirect(url_for('download', 
