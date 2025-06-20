@@ -1,4 +1,4 @@
-# PPT2SD - PowerPoint to H5P SlideDeck Converter
+# Slideucator - PowerPoint to H5P SlideDeck Converter
 
 A modern web application that converts PowerPoint presentations into interactive H5P SlideDeck packages. Upload your PDF slides and PPTX files to create engaging, web-ready presentations with embedded audio and speaker notes.
 
