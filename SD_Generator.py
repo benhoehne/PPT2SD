@@ -187,7 +187,7 @@ class H5PSlideDeckGenerator:
         unique_id = ''.join(str(uuid.uuid4()).split('-')[1:3]).upper()[:8]
         return f"{extension}-{unique_id}"
     
-    def create_pdf_element(self, pdf_path: str) -> Dict:
+    def create_pdf_element(self, pdf_path: str, slide_num: int) -> Dict:
         """Create a PDF element for the slide"""
         element = {
             "params": {
@@ -205,17 +205,17 @@ class H5PSlideDeckGenerator:
             "metadata": {
                 "contentType": "PDF Viewer",
                 "license": "U",
-                "title": "Untitled PDF Viewer",
+                "title": f"Slide PDF {slide_num}",
                 "authors": [],
                 "changes": [],
-                "extraTitle": "Untitled PDF Viewer"
+                "extraTitle": f"Slide PDF {slide_num}"
             },
             "subContentId": str(uuid.uuid4())
         }
         
         return element
     
-    def create_audio_element(self, audio_path: str) -> Dict:
+    def create_audio_element(self, audio_path: str, slide_num: int) -> Dict:
         """Create an audio element for the slide"""
         element = {
             "params": {
@@ -237,10 +237,10 @@ class H5PSlideDeckGenerator:
             "metadata": {
                 "contentType": "Audio",
                 "license": "U",
-                "title": "Untitled Audio",
+                "title": f"Slide Audio {slide_num}",
                 "authors": [],
                 "changes": [],
-                "extraTitle": "Untitled Audio"
+                "extraTitle": f"Slide Audio {slide_num}"
             },
             "subContentId": str(uuid.uuid4())
         }
@@ -251,15 +251,39 @@ class H5PSlideDeckGenerator:
                     notes_text: str = "") -> Dict:
         """Create a slide object for the SlideDeck presentation"""
         
-        slide = {
-            "image": self.create_pdf_element(pdf_path),
+        # Create the params object with slide content
+
+        if slide_num < 10 and notes_text:
+            notes = f"<p>{notes_text[:-1]}</p>"
+        elif slide_num >= 10 and notes_text:
+            notes = f"<p>{notes_text[:-2]}</p>"
+        else:
+            notes = ""
+
+        params = {
+            "image": self.create_pdf_element(pdf_path,slide_num),
             "title": f"Slide {slide_num}",
-            "notes": f"<p>{notes_text}</p>" if notes_text else ""
+            "notes": notes
         }
         
         # Add audio element if available
         if audio_path:
-            slide["audioOrVideo"] = self.create_audio_element(audio_path)
+            params["audioOrVideo"] = self.create_audio_element(audio_path,slide_num)
+        
+        # Create the complete slide structure with H5P.Slide wrapper
+        slide = {
+            "params": params,
+            "library": "H5P.Slide 1.0",
+            "metadata": {
+                "contentType": "Slide",
+                "license": "U",
+                "title": f"Slide {slide_num}",
+                "authors": [],
+                "changes": [],
+                "extraTitle": f"Slide {slide_num}"
+            },
+            "subContentId": str(uuid.uuid4())
+        }
         
         return slide
     

@@ -1,0 +1,52 @@
+{
+  "title": "Slide",
+  "description": "A single slide for use in SlideDeck",
+  "majorVersion": 1,
+  "minorVersion": 0,
+  "patchVersion": 0,
+  "runnable": 0,
+  "author": "evoltas GmbH",
+  "license": "MIT",
+  "machineName": "H5P.Slide",
+  "metadataSettings": {
+    "disable": 0,
+    "disableExtraTitleField": 1
+  },
+  "preloadedJs": [
+    {
+      "path": "dist/h5p-slide.js"
+    }
+  ],
+  "presaveScripts": [
+    {
+      "path": "presave.js"
+    }
+  ],
+  "preloadedDependencies": [
+    {
+      "machineName": "H5P.Image",
+      "majorVersion": 1,
+      "minorVersion": 1
+    },
+    {
+      "machineName": "H5P.PDFViewer",
+      "majorVersion": 1,
+      "minorVersion": 0
+    },
+    {
+      "machineName": "H5P.Audio",
+      "majorVersion": 1,
+      "minorVersion": 5
+    },
+    {
+      "machineName": "H5P.Video",
+      "majorVersion": 1,
+      "minorVersion": 6
+    },
+    {
+      "machineName": "H5P.AdvancedText",
+      "majorVersion": 1,
+      "minorVersion": 1
+    }
+  ]
+} 

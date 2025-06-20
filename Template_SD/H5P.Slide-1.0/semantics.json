@@ -1,0 +1,63 @@
+[
+  {
+    "name": "title",
+    "type": "text",
+    "label": "Slide Title",
+    "description": "Title for this slide",
+    "importance": "high"
+  },
+  {
+    "name": "image",
+    "type": "library",
+    "label": "Slide Content",
+    "description": "Add an image or PDF for this slide",
+    "options": [
+      "H5P.Image 1.1",
+      "H5P.PDFViewer 1.0"
+    ],
+    "importance": "high",
+    "showImportance": false
+  },
+  {
+    "name": "audioOrVideo",
+    "type": "library",
+    "label": "Audio or Video",
+    "description": "Add audio or video to accompany this slide",
+    "optional": true,
+    "options": [
+      "H5P.Audio 1.5",
+      "H5P.Video 1.6"
+    ],
+    "showImportance": false
+  },
+  {
+    "name": "notes",
+    "type": "text",
+    "label": "Notes",
+    "description": "Add notes or additional information for this slide",
+    "widget": "html",
+    "optional": true,
+    "enterMode": "p",
+    "tags": [
+      "sub",
+      "sup",
+      "strong",
+      "em",
+      "p",
+      "code",
+      "u",
+      "del",
+      "a",
+      "ul",
+      "ol",
+      "h2",
+      "h3",
+      "h4",
+      "h5",
+      "h6",
+      "pre",
+      "hr",
+      "table"
+    ]
+  }
+] 

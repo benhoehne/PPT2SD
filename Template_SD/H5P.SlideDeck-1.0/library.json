@@ -4,7 +4,7 @@
   "contentType": "Media",
   "majorVersion": 1,
   "minorVersion": 0,
-  "patchVersion": 5,
+  "patchVersion": 7,
   "runnable": 1,
   "fullscreen": 1,
   "coreApi": {
@@ -39,6 +39,11 @@
       "minorVersion": 3
     },
     {
+      "machineName": "H5P.Slide",
+      "majorVersion": 1,
+      "minorVersion": 0
+    },
+    {
       "machineName": "H5P.Image",
       "majorVersion": 1,
       "minorVersion": 1
@@ -57,18 +62,11 @@
       "machineName": "H5P.PDFViewer",
       "majorVersion": 1,
       "minorVersion": 0
-    }
-  ],
-  "editorDependencies": [
-    {
-      "machineName": "H5PEditor.Wizard",
-      "majorVersion": 1,
-      "minorVersion": 2
     },
     {
-      "machineName": "H5PEditor.SlideDeck",
+      "machineName": "H5PEditor.VerticalTabs",
       "majorVersion": 1,
-      "minorVersion": 0
+      "minorVersion": 3
     }
   ]
 }
