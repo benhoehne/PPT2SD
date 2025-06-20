@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}PPT 2 SlideDeck{% endblock %}
+{% block title %}Slideucator{% endblock %}
 
 {% block content %}
-<form id="uploadForm" class="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4 sm:mt-16 w-full overflow-hidden">
+<form id="uploadForm" class="lg:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 w-full overflow-hidden">
 
     <!-- PDF Upload -->
     <div class="flex p-px overflow-hidden rounded-lg bg-gray-800 ring-1 ring-white/15 w-full">
         <div class="p-6 w-full">
-            <h3 class="text-sm/4 font-semibold text-cyan-400">Required</h3>
+            <h3 class="text-sm/4 font-semibold text-indigo-400">Required</h3>
             <p class="mt-2 text-lg font-medium tracking-tight text-white">PDF Slides</p>
-            <p class="mt-2 text-sm text-gray-400">Upload your PDF slides for conversion</p>
+            <p class="mt-2 text-sm text-gray-400">Upload your PDF slides for conversion. One page per slide.</p>
 
             <div id="pdfDropZone"
                 class="mt-4 flex justify-center rounded-lg border border-dashed border-gray-500/25 px-6 py-10 w-full">
@@ -41,7 +41,7 @@
             <div class="p-6 w-full">
                 <h3 class="text-sm/4 font-semibold text-indigo-400">Optional</h3>
                 <p class="mt-2 text-lg font-medium tracking-tight text-white">PowerPoint File</p>
-                <p class="mt-2 text-sm text-gray-400">Upload PPTX to include audio and notes</p>
+                <p class="mt-2 text-sm text-gray-400">Upload PPTX to include audio and notes. One audio per slide.</p>
 
                 <div id="pptxDropZone"
                     class="mt-4 flex justify-center rounded-lg border border-dashed border-gray-500/25 px-6 py-10 w-full">
@@ -70,30 +70,20 @@
     <!-- Title Input -->
     <div class="flex p-px overflow-hidden rounded-lg bg-gray-800 ring-1 ring-white/15 w-full md:col-span-2">
         <div class="overflow-hidden mb-4 w-full">
-            <div class="p-6">
-                <h3 class="text-sm/4 font-semibold text-indigo-400">Optional</h3>
-                <p class="mt-2 text-lg font-medium tracking-tight text-white">Presentation Title</p>
-                <p class="mt-2 text-sm text-gray-400">Leave blank to use the filename as the title</p>
-
-                <div class="mt-4">
-                    <input type="text" name="title" id="title"
-                        class="block w-56 px-4 rounded-md border-0 bg-gray-800 py-1.5 text-white shadow-sm ring-1 ring-inset ring-gray-700 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                        placeholder="Enter presentation title">
+            <div class="flex p-px place-content-center">
+                <div class="overflow-hidden w-52 place-content-center mx-auto">
+                    <div class="p-6">
+                        <button type="submit"
+                            class="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer">
+                            Convert to H5P SlideDeck
+                        </button>
+                    </div>
                 </div>
             </div>
+            
             <p class="text-sm text-gray-400 px-6">For further information, please visit <a href="https://evoltas.de" class="text-indigo-400">evoltas</a></p>
         </div>
-        <!-- Convert Button -->
-        <div class="flex p-px">
-            <div class="overflow-hidden w-full place-content-center">
-                <div class="p-6">
-                    <button type="submit"
-                        class="w-full rounded-md bg-indigo-500 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 cursor-pointer">
-                        Convert to H5P SlideDeck
-                    </button>
-                </div>
-            </div>
-        </div>
+        
     </div>
 
 </form>
@@ -237,7 +227,7 @@
             
             const pdfFile = pdfInput.files[0];
             const pptxFile = pptxInput.files[0];
-            const title = document.getElementById('title').value;
+            const title = pdfInput.files[0];
             
             if (!pdfFile) {
                 alert('Please select a PDF file');

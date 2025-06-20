@@ -2,61 +2,26 @@
   {
     "name": "slides",
     "type": "list",
-    "label": "Slides",
+    "label": "List of Slides",
     "entity": "Slide",
+    "importance": "high",
     "min": 1,
+    "widgets": [
+      {
+        "name": "VerticalTabs",
+        "label": "Default"
+      }
+    ],
     "field": {
       "name": "slide",
-      "type": "group",
+      "type": "library",
       "label": "Slide",
-      "fields": [
-        {
-          "name": "title",
-          "type": "text",
-          "label": "Slide Title",
-          "description": "Title for this slide",
-          "importance": "high"
-        },
-        {
-          "name": "image",
-          "type": "library",
-          "label": "Slide Content",
-          "description": "Add an image or PDF for this slide",
-          "options": [
-            "H5P.Image 1.1",
-            "H5P.PDFViewer 1.0"
-          ],
-          "importance": "high"
-        },
-        {
-          "name": "audioOrVideo",
-          "type": "library",
-          "label": "Audio or Video",
-          "description": "Add audio or video to accompany this slide",
-          "optional": true,
-          "options": [
-            "H5P.Audio 1.5",
-            "H5P.Video 1.6"
-          ]
-        },
-        {
-          "name": "notes",
-          "type": "text",
-          "label": "Notes",
-          "description": "Add notes or additional information for this slide",
-          "widget": "html",
-          "optional": true,
-          "enterMode": "p",
-          "tags": [
-            "p",
-            "br",
-            "strong",
-            "em",
-            "u",
-            "a"
-          ]
-        }
-      ]
+      "importance": "high",
+      "description": "Content for this slide",
+      "options": [
+        "H5P.Slide 1.0"
+      ],
+      "showImportance": false
     }
   },
   {

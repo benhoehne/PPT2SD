@@ -241,7 +241,8 @@ class H5PSlideDeckGenerator:
                     notes_text: str = "") -> Dict:
         """Create a slide object for the SlideDeck presentation"""
         
-        slide = {
+        # Create the slide params content
+        slide_params = {
             "image": self.create_pdf_element(pdf_path),
             "title": f"Slide {slide_num}",
             "notes": f"<p>{notes_text}</p>" if notes_text else ""
@@ -249,7 +250,22 @@ class H5PSlideDeckGenerator:
         
         # Add audio element if available
         if audio_path:
-            slide["audioOrVideo"] = self.create_audio_element(audio_path)
+            slide_params["audioOrVideo"] = self.create_audio_element(audio_path)
+        
+        # Wrap in proper H5P slide structure
+        slide = {
+            "params": slide_params,
+            "library": "H5P.Slide 1.0",
+            "subContentId": str(uuid.uuid4()),
+            "metadata": {
+                "contentType": "Slide",
+                "license": "U",
+                "title": "Untitled Slide",
+                "authors": [],
+                "changes": [],
+                "extraTitle": "Untitled Slide"
+            }
+        }
         
         return slide
     

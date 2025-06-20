@@ -184,3 +184,5 @@ node_modules/
 .DS_Store
 uploads/
 00_Output/
+test_files/
+google_key.json
